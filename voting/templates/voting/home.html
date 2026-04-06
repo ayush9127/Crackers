@@ -1,0 +1,90 @@
+{% extends 'voting/base.html' %}
+{% block title %}ChainVote — Elections{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Active Elections</h1>
+    <p class="page-subtitle">Cast your vote. Every transaction is permanent.</p>
+</div>
+
+{% if active_elections %}
+<section class="election-section">
+    <div class="section-label section-label--active">🟢 LIVE NOW</div>
+    <div class="election-grid">
+        {% for election in active_elections %}
+        <div class="election-card election-card--active">
+            <div class="card-status">ACTIVE</div>
+            <h2 class="card-title">{{ election.title }}</h2>
+            <p class="card-desc">{{ election.description }}</p>
+            <div class="card-meta">
+                <span>🗳 {{ election.total_votes }} votes cast</span>
+                <span>⏰ Ends {{ election.end_time|date:"M d, Y H:i" }} UTC</span>
+            </div>
+            <div class="card-actions">
+                {% if user.is_authenticated %}
+                    {% if election.id in voted_election_ids %}
+                        <a href="{% url 'election_detail' election.id %}" class="btn btn-ghost">View Results</a>
+                        <span class="voted-badge">✅ Voted</span>
+                    {% else %}
+                        <a href="{% url 'election_detail' election.id %}" class="btn btn-primary">Cast Vote →</a>
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'login' %}?next={% url 'election_detail' election.id %}" class="btn btn-primary">Login to Vote →</a>
+                {% endif %}
+                <a href="{% url 'results' election.id %}" class="btn btn-ghost">Results</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if upcoming_elections %}
+<section class="election-section">
+    <div class="section-label section-label--upcoming">🔵 UPCOMING</div>
+    <div class="election-grid">
+        {% for election in upcoming_elections %}
+        <div class="election-card election-card--upcoming">
+            <div class="card-status card-status--upcoming">UPCOMING</div>
+            <h2 class="card-title">{{ election.title }}</h2>
+            <p class="card-desc">{{ election.description }}</p>
+            <div class="card-meta">
+                <span>📅 Starts {{ election.start_time|date:"M d, Y H:i" }} UTC</span>
+            </div>
+            <div class="card-actions">
+                <a href="{% url 'election_detail' election.id %}" class="btn btn-ghost">Preview</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if ended_elections %}
+<section class="election-section">
+    <div class="section-label section-label--ended">⚫ ENDED</div>
+    <div class="election-grid">
+        {% for election in ended_elections %}
+        <div class="election-card election-card--ended">
+            <div class="card-status card-status--ended">ENDED</div>
+            <h2 class="card-title">{{ election.title }}</h2>
+            <p class="card-desc">{{ election.description }}</p>
+            <div class="card-meta">
+                <span>🗳 {{ election.total_votes }} total votes</span>
+                <span>📅 Ended {{ election.end_time|date:"M d, Y" }}</span>
+            </div>
+            <div class="card-actions">
+                <a href="{% url 'results' election.id %}" class="btn btn-ghost">View Results</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if not active_elections and not upcoming_elections and not ended_elections %}
+<div class="empty-state">
+    <p>No elections yet. Check back soon or ask an admin to create one.</p>
+</div>
+{% endif %}
+{% endblock %}
